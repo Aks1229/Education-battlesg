@@ -255,4 +255,297 @@
         }
     </script>
 </body>
+</html><!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduBattle - Cash Quiz Contest App</title>
+    <style>
+        :root {
+            --primary: #10b981;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --accent: #f59e0b;
+            --cash: #2563eb;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            margin: 0;
+            padding: 0;
+            color: var(--dark);
+        }
+        header {
+            background: var(--dark);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .wallet-badge {
+            background: var(--accent);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .lang-switch {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .container {
+            padding: 15px;
+            max-width: 600px;
+            margin: auto;
+        }
+        .card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        .contest-card {
+            border-left: 5px solid var(--cash);
+        }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .quiz-screen, .dashboard {
+            display: none;
+        }
+        .option-btn {
+            background: white;
+            border: 2px solid #e5e7eb;
+            padding: 12px;
+            margin: 8px 0;
+            width: 100%;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: #ecfdf5;
+        }
+        .timer {
+            color: #ef4444;
+            font-weight: bold;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <span>EduBattle 🧠</span>
+        <div>
+            <span class="wallet-badge" id="wallet-text">Wallet: ₹100</span>
+            <button class="lang-switch" onclick="toggleLanguage()">HI/EN</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- डैशबोर्ड / कॉंटेस्ट लिस्ट स्क्रीन -->
+        <div id="dashboard-screen" class="dashboard" style="display: block;">
+            <h3 id="sec-heading">Live Cash & Practice Contests</h3>
+            
+            <div class="card contest-card">
+                <h4 id="c1-title">🔥 Rajasthan GK Mega Cash Battle</h4>
+                <p id="c1-desc">Prize Pool: ₹50,000 | Entry: ₹20</p>
+                <button class="btn" onclick="startQuiz('gk')" id="btn-join1">Join Contest (₹20)</button>
+            </div>
+
+            <div class="card contest-card">
+                <h4 id="c2-title">⚡ General Science & Math League</h4>
+                <p id="c2-desc">Prize Pool: ₹10,000 | Entry: Free</p>
+                <button class="btn" onclick="startQuiz('science')" id="btn-join2">Join Contest (Free)</button>
+            </div>
+        </div>
+
+        <!-- क्विज़ खेलने की स्क्रीन -->
+        <div id="quiz-screen" class="quiz-screen card">
+            <h3 id="question-text">Question goes here...</h3>
+            <span class="timer" id="time-left">Time: 15s</span>
+            <div style="clear: both; margin-top: 15px;">
+                <button class="option-btn" onclick="checkAnswer(0)" id="opt0">Option 1</button>
+                <button class="option-btn" onclick="checkAnswer(1)" id="opt1">Option 2</button>
+                <button class="option-btn" onclick="checkAnswer(2)" id="opt2">Option 3</button>
+                <button class="option-btn" onclick="checkAnswer(3)" id="opt3">Option 4</button>
+            </div>
+        </div>
+
+        <!-- रिजल्ट स्क्रीन -->
+        <div id="result-screen" class="card" style="display: none; text-align: center;">
+            <h2 id="res-heading">Quiz Completed! 🎉</h2>
+            <p id="score-display">Your Score: 0/5</p>
+            <p id="win-reward" style="font-weight: bold; color: green;"></p>
+            <button class="btn" onclick="goHome()" id="btn-home">Back to Contests</button>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'hi';
+        let currentQuiz = [];
+        let questionIndex = 0;
+        let score = 0;
+        let timer;
+        let timeLeft = 15;
+        let walletBalance = 100; // शुरुआती वॉलेट बैलेंस
+
+        const quizzes = {
+            gk: {
+                hi: [
+                    { q: "राजस्थान का राज्य पक्षी कौन सा है?", options: ["गोडावण", "मोर", "ताउती", "तोता"], correct: 0 },
+                    { q: "हवामहल किस शहर में स्थित है?", options: ["जोधपुर", "उदयपुर", "जयपुर", "अजमेर"], correct: 2 },
+                    { q: "राजस्थान की स्थापना कब हुई थी?", options: ["30 मार्च 1949", "15 अगस्त 1947", "26 जनवरी 1950", "1 नवंबर 1956"], correct: 0 }
+                ],
+                en: [
+                    { q: "What is the state bird of Rajasthan?", options: ["Great Indian Bustard", "Peacock", "Parrot", "Eagle"], correct: 0 },
+                    { q: "In which city is Hawa Mahal located?", options: ["Jodhpur", "Udaipur", "Jaipur", "Ajmer"], correct: 2 },
+                    { q: "When was Rajasthan established?", options: ["March 30, 1949", "August 15, 1947", "January 26, 1950", "November 1, 1956"], correct: 0 }
+                ]
+            },
+            science: {
+                hi: [
+                    { q: "मानव शरीर में कुल कितनी हड्डियां होती हैं?", options: ["206", "208", "210", "212"], correct: 0 },
+                    { q: "प्रकाश वर्ष (Light Year) किसकी इकाई है?", options: ["दूरी", "समय", "गति", "प्रकाश तीव्रता"], correct: 0 }
+                ],
+                en: [
+                    { q: "How many bones are there in the human body?", options: ["206", "208", "210", "212"], correct: 0 },
+                    { q: "Light Year is a unit of?", options: ["Distance", "Time", "Speed", "Light intensity"], correct: 0 }
+                ]
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'hi' ? 'en' : 'hi';
+            updateUIStrings();
+        }
+
+        function updateUIStrings() {
+            document.getElementById('wallet-text').innerText = (currentLang === 'hi' ? 'वॉलेट: ₹' : 'Wallet: ₹') + walletBalance;
+            if (currentLang === 'hi') {
+                document.getElementById('sec-heading').innerText = "लाइव कैश और प्रैक्टिस कॉंटेस्ट";
+                document.getElementById('c1-title').innerText = "🔥 राजस्थान जीके मेगा कैश बैटल";
+                document.getElementById('c1-desc').innerText = "इनाम राशि: ₹50,000 | एंट्री: ₹20";
+                document.getElementById('btn-join1').innerText = "कॉंटेस्ट ज्वाइन करें (₹20)";
+                document.getElementById('c2-title').innerText = "⚡ सामान्य विज्ञान और गणित लीग";
+                document.getElementById('c2-desc').innerText = "इनाम राशि: ₹10,000 | एंट्री: फ्री";
+                document.getElementById('btn-join2').innerText = "कॉंटेस्ट ज्वाइन करें (फ्री)";
+                document.getElementById('btn-home').innerText = "वापस जाएं";
+            } else {
+                document.getElementById('sec-heading').innerText = "Live Cash & Practice Contests";
+                document.getElementById('c1-title').innerText = "🔥 Rajasthan GK Mega Cash Battle";
+                document.getElementById('c1-desc').innerText = "Prize Pool: ₹50,000 | Entry: ₹20";
+                document.getElementById('btn-join1').innerText = "Join Contest (₹20)";
+                document.getElementById('c2-title').innerText = "⚡ General Science & Math League";
+                document.getElementById('c2-desc').innerText = "Prize Pool: ₹10,000 | Entry: Free";
+                document.getElementById('btn-join2').innerText = "Join Contest (Free)";
+                document.getElementById('btn-home').innerText = "Back to Contests";
+            }
+        }
+
+        function startQuiz(type) {
+            if (type === 'gk') {
+                if (walletBalance < 20) {
+                    alert(currentLang === 'hi' ? 'वॉलेट में पर्याप्त पैसे नहीं हैं!' : 'Insufficient wallet balance!');
+                    return;
+                }
+                walletBalance -= 20; // 20 रुपये एंट्री फीस काटना
+                document.getElementById('wallet-text').innerText = (currentLang === 'hi' ? 'वॉलेट: ₹' : 'Wallet: ₹') + walletBalance;
+            }
+
+            currentQuiz = quizzes[type][currentLang];
+            questionIndex = 0;
+            score = 0;
+            
+            document.getElementById('dashboard-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (questionIndex >= currentQuiz.length) {
+                endQuiz();
+                return;
+            }
+            
+            clearInterval(timer);
+            timeLeft = 15;
+            document.getElementById('time-left').innerText = (currentLang === 'hi' ? 'समय: ' : 'Time: ') + timeLeft + 's';
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('time-left').innerText = (currentLang === 'hi' ? 'समय: ' : 'Time: ') + timeLeft + 's';
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    questionIndex++;
+                    loadQuestion();
+                }
+            }, 1000);
+
+            let qData = currentQuiz[questionIndex];
+            document.getElementById('question-text').innerText = `Q${questionIndex + 1}: ${qData.q}`;
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`opt${i}`).innerText = qData.options[i];
+            }
+        }
+
+        function checkAnswer(selectedOpt) {
+            clearInterval(timer);
+            let qData = currentQuiz[questionIndex];
+            if (selectedOpt === qData.correct) {
+                score++;
+            }
+            questionIndex++;
+            loadQuestion();
+        }
+
+        function endQuiz() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            document.getElementById('score-display').innerText = (currentLang === 'hi' ? 'आपका स्कोर: ' : 'Your Score: ') + score + '/' + currentQuiz.length;
+            
+            let rewardMsg = "";
+            if (score >= 2) {
+                let wonAmount = 100; // जीतने पर मिलने वाले रुपये
+                walletBalance += wonAmount;
+                rewardMsg = currentLang === 'hi' ? `बधाई हो! आपने ₹${wonAmount} जीते हैं! 🎉` : `Congratulations! You won ₹${wonAmount}! 🎉`;
+            } else {
+                rewardMsg = currentLang === 'hi' ? 'अगلی बार बेहतर प्रयास करें!' : 'Better luck next time!';
+            }
+            document.getElementById('win-reward').innerText = rewardMsg;
+            document.getElementById('wallet-text').innerText = (currentLang === 'hi' ? 'वॉलेट: ₹' : 'Wallet: ₹') + walletBalance;
+        }
+
+        function goHome() {
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('dashboard-screen').style.display = 'block';
+        }
+    </script>
+</body>
 </html>
+
