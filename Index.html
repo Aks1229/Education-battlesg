@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduBattle - Dream11 Quiz</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding-bottom: 70px;
+            color: #222;
+        }
+        header {
+            background: #161a20;
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { font-size: 18px; font-weight: bold; color: #ec2227; }
+        .header-right { display: flex; align-items: center; gap: 8px; }
+        .wallet-pill { background: #2a303c; color: #fff; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .lang-btn { background: #ec2227; color: white; border: none; padding: 5px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; }
+        
+        .container { padding: 10px; max-width: 600px; margin: auto; }
+        
+        .tabs { display: flex; background: white; border-radius: 6px; overflow: hidden; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; cursor: pointer; color: #666; border-bottom: 3px solid transparent; }
+        .tab.active { color: #ec2227; border-bottom-color: #ec2227; background: #fff5f5; }
+
+        .card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #e1e4e8; }
+        .prize-label { font-size: 12px; color: #666; font-weight: bold; }
+        .prize-amt { font-size: 20px; font-weight: bold; color: #111; margin: 2px 0 8px 0; }
+        .meta { display: flex; justifyContent: space-between; font-size: 11px; color: #666; margin-bottom: 10px; }
+        
+        .join-btn { background: #2e7d32; color: white; border: none; width: 100%; padding: 9px; border-radius: 5px; font-size: 14px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justifyContent: space-around; padding: 6px 0; box-shadow: 0 -2px 8px rgba(0,0,0,0.1); z-index: 100; max-width: 600px; margin: auto; }
+        .nav-item { text-align: center; font-size: 10px; color: #666; cursor: pointer; flex: 1; }
+        .nav-item.active { color: #ec2227; font-weight: bold; }
+        .nav-item span { display: block; font-size: 16px; margin-bottom: 1px; }
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+        
+        .quiz-box { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .timer { color: #ec2227; font-weight: bold; float: right; }
+        .opt-btn { background: #fff; border: 2px solid #e1e4e8; padding: 10px; margin: 6px 0; width: 100%; border-radius: 6px; text-align: left; cursor: pointer; font-size: 14px; }
+        .opt-btn:hover { border-color: #ec2227; background: #fff5f5; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">EduBattle ⚡</div>
+        <div class="header-right">
+            <div class="wallet-pill" id="w-amt">₹150</div>
+            <button class="lang-btn" onclick="toggleLang()">HI / EN</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- होम स्क्रीन -->
+        <div id="home-screen" class="screen active">
+            <div class="tabs">
+                <div class="tab active" id="t-mega" onclick="switchTab('mega')">Mega Contests</div>
+                <div class="tab" id="t-free" onclick="switchTab('free')">Free Contests</div>
+            </div>
+            <div id="contest-box"></div>
+        </div>
+
+        <!-- मेरे कॉंटेस्ट -->
+        <div id="my-screen" class="screen">
+            <h3 id="my-title" style="margin-top:0;">My Contests</h3>
+            <div class="card">
+                <h4 style="margin:0 0 4px 0;">Rajasthan GK Mega Battle</h4>
+                <p style="margin:0; font-size:12px; color:#2e7d32;">Status: Joined Successfully ✅</p>
+            </div>
+        </div>
+
+        <!-- विनर्स -->
+        <div id="win-screen" class="screen">
+            <h3 id="win-title" style="margin-top:0;">Winners Leaderboard 🏆</h3>
+            <div class="card">
+                <p>🥇 1st Rank: <b>Rahul Sharma</b> - ₹20,000</p>
+                <p>🥈 2nd Rank: <b>Amit Kumar</b> - ₹10,000</p>
+                <p>🥉 3rd Rank: <b>Pooja Verma</b> - ₹5,000</p>
+            </div>
+        </div>
+
+        <!-- प्रोफाइल -->
+        <div id="prof-screen" class="screen">
+            <h3 id="prof-title" style="margin-top:0;">My Wallet</h3>
+            <div class="card" style="text-align: center; padding: 20px;">
+                <p style="color:#666; margin:0;">Total Balance</p>
+                <h1 id="prof-w" style="color:#2e7d32; margin:8px 0; font-size: 28px;">₹150</h1>
+                <button class="join-btn" style="background:#ec2227;" onclick="addCash()">+ Add Cash</button>
+            </div>
+        </div>
+
+        <!-- क्विज़ स्क्रीन -->
+        <div id="quiz-screen" class="screen">
+            <div class="quiz-box">
+                <span class="timer" id="t-left">Time: 15s</span>
+                <h3 id="q-text" style="margin-top:0;">Question</h3>
+                <div style="margin-top: 15px;">
+                    <button class="opt-btn" onclick="checkAns(0)" id="o0">Opt 1</button>
+                    <button class="opt-btn" onclick="checkAns(1)" id="o1">Opt 2</button>
+                    <button class="opt-btn" onclick="checkAns(2)" id="o2">Opt 3</button>
+                    <button class="opt-btn" onclick="checkAns(3)" id="o3">Opt 4</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- रिजल्ट स्क्रीन -->
+        <div id="result-screen" class="screen">
+            <div class="quiz-box" style="text-align: center;">
+                <h2>Quiz Finished! 🎉</h2>
+                <p id="res-score" style="font-size: 16px; font-weight: bold;"></p>
+                <p id="res-reward" style="color: #2e7d32; font-weight: bold; font-size: 14px;"></p>
+                <button class="join-btn" style="margin-top: 10px;" onclick="goHome()">Back to Home</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- बॉटम नेविगेशन बार -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="navTo('home', this)"><span>🏠</span> <span id="n-home">Home</span></div>
+        <div class="nav-item" onclick="navTo('my', this)"><span>📋</span> <span id="n-my">My Contests</span></div>
+        <div class="nav-item" onclick="navTo('win', this)"><span>🏆</span> <span id="n-win">Winners</span></div>
+        <div class="nav-item" onclick="navTo('prof', this)"><span>👤</span> <span id="n-prof">Profile</span></div>
+    </div>
+
+    <script>
+        let lang = 'hi';
+        let wallet = 150;
+        let tab = 'mega';
+        let activeQuiz = [];
+        let qIdx = 0;
+        let score = 0;
+        let timer;
+        let timeLeft = 15;
+        let entryFee = 0;
+
+        const data = {
+            mega: {
+                hi: [{ id: 'gk', title: "🔥 राजस्थान जीके मेगा कैश बैटल", prize: "₹50,000", fee: 20, spots: "120/500 left" }],
+                en: [{ id: 'gk', title: "🔥 Rajasthan GK Mega Cash Battle", prize: "₹50,000", fee: 20, spots: "120/500 left" }]
+            },
+            free: {
+                hi: [{ id: 'freegk', title: "🎯 प्रैक्टिस क्विज़ कॉंटेस्ट (फ्री)", prize: "₹500 बोनस", fee: 0, spots: "असीमित" }],
+                en: [{ id: 'freegk', title: "🎯 Practice Quiz Contest (Free)", prize: "₹500 Bonus", fee: 0, spots: "Unlimited" }]
+            }
+        };
+
+        const questions = {
+            gk: {
+                hi: [
+                    { q: "राजस्थान का राज्य पक्षी कौन सा है?", options: ["गोडावण", "मोर", "ताउती", "तोता"], correct: 0 },
+                    { q: "हवामहल किस शहर में स्थित है?", options: ["जोधपुर", "उदयपुर", "जयपुर", "अजमेर"], correct: 2 },
+                    { q: "राजस्थान की स्थापना कब हुई थी?", options: ["30 मार्च 1949", "15 अगस्त 1947", "26 जनवरी 1950", "1 नवंबर 1956"], correct: 0 }
+                ],
+                en: [
+                    { q: "What is the state bird of Rajasthan?", options: ["Great Indian Bustard", "Peacock", "Parrot", "Eagle"], correct: 0 },
+                    { q: "In which city is Hawa Mahal located?", options: ["Jodhpur", "Udaipur", "Jaipur", "Ajmer"], correct: 2 },
+                    { q: "When was Rajasthan established?", options: ["March 30, 1949", "August 15, 1947", "January 26, 1950", "November 1, 1956"], correct: 0 }
+                ]
+            },
+            freegk: {
+                hi: [
+                    { q: "भारत की राजधानी क्या है?", options: ["मुंबई", "नई दिल्ली", "कोलकाता", "चेन्नई"], correct: 1 },
+                    { q: "कंप्यूटर का दिमाग किसे कहा जाता है?", options: ["मॉनिटर", "कीबोर्ड", "CPU", "माउस"], correct: 2 }
+                ],
+                en: [
+                    { q: "What is the capital of India?", options: ["Mumbai", "New Delhi", "Kolkata", "Chennai"], correct: 1 },
+                    { q: "What is the brain of the computer?", options: ["Monitor", "Keyboard", "CPU", "Mouse"], correct: 2 }
+                ]
+            }
+        };
+
+        function renderList() {
+            let box = document.getElementById('contest-box');
+            box.innerHTML = '';
+            data[tab][lang].forEach(item => {
+                box.innerHTML += `
+                    <div class="card">
+                        <div class="prize-label">${lang === 'hi' ? 'इनाम राशि' : 'Prize Pool'}</div>
+                        <div class="prize-amt">${item.prize}</div>
+                        <h4 style="margin:4px 0;">${item.title}</h4>
+                        <div class="meta"><span>${item.spots}</span> <b>Entry: ₹${item.fee}</b></div>
+                        <button class="join-btn" onclick="startQuiz('${item.id}', ${item.fee})">${lang === 'hi' ? 'कॉंटेस्ट ज्वाइन करें' : 'Join Contest'}</button>
+                    </div>`;
+            });
+        }
+
+        function switchTab(t) {
+            tab = t;
+            document.getElementById('t-mega').classList.toggle('active', t === 'mega');
+            document.getElementById('t-free').classList.toggle('active', t === 'free');
+            renderList();
+        }
+
+        function navTo(id, el) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id + '-screen').classList.add('active');
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function toggleLang() {
+            lang = lang === 'hi' ? 'en' : 'hi';
+            updateText();
+            renderList();
+        }
+
+        function updateText() {
+            document.getElementById('n-home').innerText = lang === 'hi' ? 'होम' : 'Home';
+            document.getElementById('n-my').innerText = lang === 'hi' ? 'माय कॉंटेस्ट' : 'My Contests';
+            document.getElementById('n-win').innerText = lang === 'hi' ? 'विनर्स' : 'Winners';
+            document.getElementById('n-prof').innerText = lang === 'hi' ? 'प्रोफाइल' : 'Profile';
+            document.getElementById('w-amt').innerText = '₹' + wallet;
+            document.getElementById('prof-w').innerText = '₹' + wallet;
+        }
+
+        function addCash() {
+            wallet += 100;
+            updateText();
+            alert(lang === 'hi' ? '₹100 सफलतापूर्वक जोड़े गए!' : 'Successfully added ₹100!');
+        }
+
+        function startQuiz(key, fee) {
+            if (wallet < fee) {
+                alert(lang === 'hi' ? 'वॉलेट में पर्याप्त पैसे नहीं हैं!' : 'Insufficient balance!');
+                return;
+            }
+            wallet -= fee;
+            entryFee = fee;
+            updateText();
+            activeQuiz = questions[key][lang];
+            qIdx = 0;
+            score = 0;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('quiz-screen').classList.add('active');
+            loadQ();
+        }
+
+        function loadQ() {
+            if (qIdx >= activeQuiz.length) {
+                endQ();
+                return;
+            }
+            clearInterval(timer);
+            timeLeft = 15;
+            document.getElementById('t-left').innerText = (lang === 'hi' ? 'समय: ' : 'Time: ') + timeLeft + 's';
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('t-left').innerText = (lang === 'hi' ? 'समय: ' : 'Time: ') + timeLeft + 's';
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    qIdx++;
+                    loadQ();
+                }
+            }, 1000);
+            let q = activeQuiz[qIdx];
+            document.getElementById('q-text').innerText = `Q${qIdx + 1}: ${q.q}`;
+            for (let i = 0; i < 4; i++) document.getElementById('o' + i).innerText = q.options[i];
+        }
+
+        function checkAns(opt) {
+            clearInterval(timer);
+            if (opt === activeQuiz[qIdx].correct) score++;
+            qIdx++;
+            loadQ();
+        }
+
+        function endQ() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('result-screen').classList.add('active');
+            document.getElementById('res-score').innerText = (lang === 'hi' ? 'आपका स्कोर: ' : 'Your Score: ') + score + '/' + activeQuiz.length;
+            let win = score >= 2 ? (entryFee > 0 ? entryFee * 3 : 50) : 0;
+            wallet += win;
+            document.getElementById('res-reward').innerText = win > 0 ? (lang === 'hi' ? `बधाई हो! आपने ₹${win} जीते हैं! 🎉` : `You won ₹${win}! 🎉`) : (lang === 'hi' ? 'कोई इनाम नहीं मिला।' : 'No prize won.');
+            updateText();
+        }
+
+        function goHome() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('home-screen').classList.add('active');
+        }
+
+        renderList();
+    </script>
+</body>
+</html>
